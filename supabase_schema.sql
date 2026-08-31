@@ -1,17 +1,29 @@
 -- Updated Schema for Wallet API with UUID Auto-generation
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Clean Slate: Drop existing tables if they exist
-DROP TABLE IF EXISTS "savingsItems" CASCADE;
-DROP TABLE IF EXISTS "subscriptions" CASCADE;
-DROP TABLE IF EXISTS "dues" CASCADE;
+-- Clean Slate: Drop ALL tables (active, legacy, and duplicates)
+-- Legacy tables (superseded)
+DROP TABLE IF EXISTS "savingsGoals" CASCADE;
+DROP TABLE IF EXISTS "allocations" CASCADE;
 DROP TABLE IF EXISTS "budgets" CASCADE;
+DROP TABLE IF EXISTS "subscriptions" CASCADE;
+DROP TABLE IF EXISTS "agendas" CASCADE;
+
+-- snake_case duplicates (backend uses camelCase)
+DROP TABLE IF EXISTS "user_profiles" CASCADE;
+DROP TABLE IF EXISTS "savings_items" CASCADE;
+DROP TABLE IF EXISTS "payment_methods" CASCADE;
+DROP TABLE IF EXISTS "system_settings" CASCADE;
+
+-- Active tables (recreated below)
+DROP TABLE IF EXISTS "systemSettings" CASCADE;
+DROP TABLE IF EXISTS "paymentMethods" CASCADE;
+DROP TABLE IF EXISTS "savingsItems" CASCADE;
+DROP TABLE IF EXISTS "dues" CASCADE;
 DROP TABLE IF EXISTS "transactions" CASCADE;
 DROP TABLE IF EXISTS "categories" CASCADE;
 DROP TABLE IF EXISTS "profiles" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
-DROP TABLE IF EXISTS "paymentMethods" CASCADE;
-DROP TABLE IF EXISTS "systemSettings" CASCADE;
 
 -- Users table
 CREATE TABLE "users" (
@@ -158,6 +170,7 @@ DROP POLICY IF EXISTS "Transactions are private" ON "transactions";
 DROP POLICY IF EXISTS "Dues are private" ON "dues";
 DROP POLICY IF EXISTS "Savings items are private" ON "savingsItems";
 DROP POLICY IF EXISTS "Payment methods are private" ON "paymentMethods";
+DROP POLICY IF EXISTS "Anyone can read system settings" ON "systemSettings";
 
 -- Create Policies
 CREATE POLICY "Users can view own data" ON "users" FOR SELECT USING (auth.uid() = id);
@@ -170,8 +183,8 @@ CREATE POLICY "Savings items are private" ON "savingsItems" FOR ALL USING (auth.
 CREATE POLICY "Payment methods are private" ON "paymentMethods" FOR ALL USING (auth.uid() = "userId" OR "userId" IS NULL);
 
 -- 11. System Settings (Publicly Readable - RLS Disabled)
-ALTER TABLE "systemSettings" DISABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anyone can read system settings" ON "systemSettings";
+ALTER TABLE "systemSettings" DISABLE ROW LEVEL SECURITY;
 
 
 
