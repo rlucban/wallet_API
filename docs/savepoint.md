@@ -25,3 +25,15 @@
 ## 2026-10-03 — Spec 01 FINAL v1.0 (Option A)
 - User call from Discovery review of both DRAFTs: `DEC-API-01` confirmed at 20 attempts / 15 min / IP; `DEC-API-02` copy confirmed; per-instance throttling on serverless accepted pending the deployed-URL matrix (`ACC-API-06` runs against the deployed URL, not localhost).
 - Implementable now, server half first (endpoint deployed before the app calls it): D-API-01 schema → D-API-02 repo → D-API-03 service → D-API-04 controller+route → D-API-05 rate limit + Postman + user-run curl matrix → D-API-06 docs. One layer at a time.
+
+---
+
+## 2026-10-04 — Spec 01 built (D-API-01..05, branch `36-web-platform-invariants-for-backend`)
+
+- D-API-01 `src/schemas/userSchema.js`: `changePasscodeSchema` (exact-4-digit pair + must-differ refine, append-only).
+- D-API-02 `src/repositories/userRepository.js`: `updatePasscode(id, hashedPasscode)` mirroring `updateSessionId`.
+- D-API-03 `src/services/authService.js`: `changePasscode` (id-only load, 401 `'Current PIN is incorrect'`, register-identical hash, persist + fresh-UUID rotation, message-only return).
+- D-API-04 `authController.changePasscode` + `POST /api/auth/change-passcode` (`authRateLimiter → protect → validate → controller`, existing routes untouched).
+- D-API-05 `src/middlewares/rateLimiter.js` (DEC-API-01 20/15min/IP, exact 429 envelope) on login + change-passcode; Postman happy + wrong-current-401 items.
+- Open (user-run): `npm install express-rate-limit@7`; ACC-API-01..07 curl matrix NOT run (skipped per user call — no spare Supabase target; mock rejected; harness needs own spec). Backend closes unverified-by-curl.
+- Unchanged: Spec 01 FINAL as-is (token-in-200 flagged separately); no other routes, schemas, table shapes, or JWT semantics touched.

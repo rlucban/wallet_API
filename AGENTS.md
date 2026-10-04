@@ -116,6 +116,7 @@ wallet-api/
   `DEC-API-01` 20/15min/IP confirmed, `DEC-API-02` copy confirmed, per-instance
   throttling accepted pending the deployed-URL matrix. Implementable now, server
   half first. See `docs/savepoint.md`.
+- **2026-10-04 — Verification decision (user call).** No test harness added — out of scope per §1.10 (harness needs its own spec + FINAL). D-API-01..05 built on `36-web-platform-invariants-for-backend` per Spec 01 FINAL as-is (message-only 200, CON-API-05/08 stand). Acceptance = user-run ACC-API-01..07 curl matrix + Postman happy/401 entries. Token-in-200 flagged as a separate future item, not implemented.
 
 ---
 
