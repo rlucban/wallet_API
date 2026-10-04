@@ -35,5 +35,5 @@
 - D-API-03 `src/services/authService.js`: `changePasscode` (id-only load, 401 `'Current PIN is incorrect'`, register-identical hash, persist + fresh-UUID rotation, message-only return).
 - D-API-04 `authController.changePasscode` + `POST /api/auth/change-passcode` (`authRateLimiter → protect → validate → controller`, existing routes untouched).
 - D-API-05 `src/middlewares/rateLimiter.js` (DEC-API-01 20/15min/IP, exact 429 envelope) on login + change-passcode; Postman happy + wrong-current-401 items.
-- Open (user-run): `npm install express-rate-limit@7`; ACC-API-01..07 curl matrix NOT run (skipped per user call — no spare Supabase target; mock rejected; harness needs own spec). Backend closes unverified-by-curl.
+- Done (user-run 2026-10-04): `npm install express-rate-limit@7` — server boots with limiter. Open: ACC-API-01..07 curl matrix NOT run (skipped per user call — no spare Supabase target; mock rejected; harness needs own spec). Backend closes unverified-by-curl.
 - Unchanged: Spec 01 FINAL as-is (token-in-200 flagged separately); no other routes, schemas, table shapes, or JWT semantics touched.
