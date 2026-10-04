@@ -54,6 +54,20 @@ const userRepository = {
     return data;
   },
 
+  updatePasscode: async (id, hashedPasscode) => {
+    const { data, error } = await supabase
+      .from('users')
+      .update({ passcode: hashedPasscode })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+    return data;
+  },
+
   deleteUser: async (id) => {
     const { error } = await supabase
       .from('users')

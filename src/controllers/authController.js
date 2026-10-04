@@ -43,6 +43,23 @@ const authController = {
     }
   },
 
+  changePasscode: async (req, res, next) => {
+    try {
+      if (!req.user || !req.user.id) {
+        throw new Error('User not found in request');
+      }
+      const { currentPasscode, newPasscode } = req.body;
+      const message = await authService.changePasscode(req.user.id, currentPasscode, newPasscode);
+
+      res.status(200).json({
+        status: 'success',
+        message
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   deleteAccount: async (req, res, next) => {
     try {
       if (!req.user || !req.user.id) {
