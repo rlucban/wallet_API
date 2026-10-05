@@ -495,6 +495,112 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "public",
+      "item": [
+        {
+          "name": "users-transactions (public, no auth)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 + success envelope', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const j = pm.response.json();",
+                  "    pm.expect(j.status).to.eql('success');",
+                  "    pm.expect(j.data.users).to.be.an('array');",
+                  "});",
+                  "pm.test('field absence: no secrets', function () {",
+                  "    const raw = pm.response.text();",
+                  "    ['passcode','currentSessionId','receiptUrl','splitInfo','dueId','savingsItemId'].forEach(function (k) {",
+                  "        pm.expect(raw).to.not.include('\"' + k + '\"');",
+                  "    });",
+                  "});",
+                  "pm.test('allowlist shape', function () {",
+                  "    const j = pm.response.json();",
+                  "    const txKeys = ['id','userId','amount','date','note','type','categoryId','paymentMethod','establishment','createdAt'].sort().join(',');",
+                  "    j.data.users.forEach(function (u) {",
+                  "        pm.expect(Object.keys(u).sort()).to.include.members(['id','name','transactionCount','transactions']);",
+                  "        (u.transactions || []).forEach(function (t) {",
+                  "            pm.expect(Object.keys(t).sort().join(',')).to.eql(txKeys);",
+                  "        });",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/public/users-transactions?limit=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "public",
+                "users-transactions"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "users-transactions - throttle 429 shape",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('429 envelope shape (only when throttled)', function () {",
+                  "    if (pm.response.code === 429) {",
+                  "        const j = pm.response.json();",
+                  "        pm.expect(j.status).to.eql('fail');",
+                  "        pm.expect(j.message).to.eql('Too many requests, try again later');",
+                  "    } else {",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/public/users-transactions?limit=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "public",
+                "users-transactions"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {

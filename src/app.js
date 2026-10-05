@@ -22,6 +22,11 @@ const savingsItemRoutes = require('./routes/savingsItemRoutes');
 const paymentMethodRoutes = require('./routes/paymentMethodRoutes');
 const storageRoutes = require('./routes/storageRoutes');
 const systemRoutes = require('./routes/systemRoutes');
+const publicRoutes = require('./routes/publicRoutes');
+const publicRateLimiter = require('./middlewares/publicRateLimiter');
+
+// Spec 02 FINAL (SPEC-API-02) — D-PUB-04: exact-origin allow for the public web app.
+const PUBLIC_WEB_ORIGIN = 'https://wise-wallet-sage.vercel.app';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/userProfiles', profileRoutes);
@@ -32,6 +37,24 @@ app.use('/api/savingsItems', savingsItemRoutes);
 app.use('/api/paymentMethods', paymentMethodRoutes);
 app.use('/api/storage', storageRoutes);
 app.use('/api/system', systemRoutes);
+// Spec 02 FINAL (SPEC-API-02) — D-PUB-04: public read-only mount (append-only).
+// Scoped CORS (exact origin, GET-only) + 60/15min/IP throttle in front of the router.
+// removeHeader clears the global cors() wildcard so evil origins get no ACAO (ACC-PUB-05).
+app.use(
+  '/api/public',
+  (req, res, next) => {
+    res.removeHeader('Access-Control-Allow-Origin');
+    next();
+  },
+  cors({
+    origin: PUBLIC_WEB_ORIGIN,
+    methods: ['GET'],
+    allowedHeaders: ['Content-Type'],
+    maxAge: 86400,
+  }),
+  publicRateLimiter,
+  publicRoutes
+);
 // Health check endpoint (legacy - now handled by /system/health)
 app.get('/api/health', (req, res) => {
   res.redirect('/api/system/health');

@@ -117,6 +117,14 @@ wallet-api/
   throttling accepted pending the deployed-URL matrix. Implementable now, server
   half first. See `docs/savepoint.md`.
 - **2026-10-04 — Verification decision (user call).** No test harness added — out of scope per §1.10 (harness needs its own spec + FINAL). D-API-01..05 built on `36-web-platform-invariants-for-backend` per Spec 01 FINAL as-is (message-only 200, CON-API-05/08 stand). Acceptance = user-run ACC-API-01..07 curl matrix + Postman happy/401 entries. Token-in-200 flagged as a separate future item, not implemented.
+- **2026-10-05 — Spec 02 DRAFT (Option A safe, NOT FINAL).** `specs/02-public-users-transactions-endpoint.md` v0.1: `GET /api/public/users-transactions` (no `protect`, allowlist-only `users.id,name` + 10 transaction columns, never `passcode`/`currentSessionId`/`receiptUrl`/`splitInfo`, `limit` 20/50 + 100-tx cap, CORS `wise-wallet-sage.vercel.app` + 60/15min/IP throttle DRAFT, envelope `{status:'success',data:{users}}`, ACC-PUB-01..07 user-run curl matrix). No code changed; needs explicit user FINAL before D-PUB-01..06.
+- **2026-10-05 — Spec 02 FINAL v1.0 (Option A safe).** User call ("spec 02 final"): DRAFT approved as-is, DEC-PUB-01..06 CONFIRMED. Implementable now, D-PUB-01 first. See `docs/savepoint.md`. No code changed in this step.
+- **2026-10-05 — Spec 02 D-PUB-01 built (repository only).** New `src/repositories/publicRepository.js` (allowlist selects, range paging, 100/user cap, no `*`/secrets/logs). Existing files untouched. D-PUB-02 service not started.
+- **2026-10-05 — Spec 02 D-PUB-02 built (service only).** New `src/services/publicService.js` (`getUsersWithTransactions` clamp + nested assemble + column re-pick). Existing files untouched. D-PUB-03 controller+route not started.
+- **2026-10-05 — Spec 02 D-PUB-03 built (controller+route, unmounted).** New `src/controllers/publicController.js` + `src/routes/publicRoutes.js` (`GET /users-transactions`, no `protect`; limiter+mount deferred to D-PUB-04). Existing files untouched. D-PUB-04 wiring not started.
+- **2026-10-05 — Spec 02 D-PUB-04 built (wiring+guardrails).** New `src/middlewares/publicRateLimiter.js` (60/15min/IP); `src/app.js` append-only `/api/public` mount (strip-wildcard → scoped CORS exact origin → limiter → router). Nine existing mounts untouched. D-PUB-05 contract next.
+- **2026-10-05 — Spec 02 D-PUB-05 built (contract; verification user-run).** `Wallet-API.postman_collection.json` `public` folder (happy + 429 items with test scripts). Code complete D-PUB-01..04; ACC-PUB-01..06 awaiting user-run output. D-PUB-06 docs next.
+- **2026-10-05 — Spec 02 complete (D-PUB-01..06, FINAL v1.0 implemented).** 5 new public-layer files; `src/app.js` + Postman append-only. Rollback = delete 5 + revert 2 (no dep change). ACC-PUB-01..07 user-run output still pending; backend closes unverified-by-curl.
 
 ---
 
