@@ -11,7 +11,16 @@ const loginSchema = z.object({
   passcode: z.string().min(1, 'Passcode is required')
 });
 
+const changePasscodeSchema = z.object({
+  currentPasscode: z.string().regex(/^\d{4}$/, 'Current passcode must be exactly 4 digits'),
+  newPasscode: z.string().regex(/^\d{4}$/, 'New passcode must be exactly 4 digits')
+}).refine((data) => data.newPasscode !== data.currentPasscode, {
+  message: 'New passcode must be different from current passcode',
+  path: ['newPasscode']
+});
+
 module.exports = {
   registerSchema,
-  loginSchema
+  loginSchema,
+  changePasscodeSchema
 };

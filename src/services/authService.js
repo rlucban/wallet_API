@@ -115,6 +115,36 @@ const authService = {
     return true;
   },
 
+  changePasscode: async (userId, currentPasscode, newPasscode) => {
+    try {
+      // 1. Load user by id ONLY (never a body-supplied id — no IDOR surface)
+      const user = await userRepository.findById(userId);
+      if (!user) {
+        throw new AppError('User not found', 404);
+      }
+
+      // 2. Verify current passcode
+      const isMatch = await bcrypt.compare(currentPasscode, user.passcode);
+      if (!isMatch) {
+        throw new AppError('Current PIN is incorrect', 401);
+      }
+
+      // 3. Hash new passcode (same calls as register)
+      const salt = await bcrypt.genSalt(10);
+      const hashedPasscode = await bcrypt.hash(newPasscode, salt);
+
+      // 4. Persist + rotate session id
+      await userRepository.updatePasscode(user.id, hashedPasscode);
+      await userRepository.updateSessionId(user.id, crypto.randomUUID());
+
+      // 5. Message only — no user, hash, or token (CON-API-05)
+      return 'Passcode changed successfully';
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(`Change passcode failed: ${error.message}`, error.statusCode || 500);
+    }
+  },
+
   deleteAccount: async (userId) => {
     try {
       // Deleting the user will trigger CASCADE delete for all related tables
