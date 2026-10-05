@@ -20,7 +20,15 @@ const protect = async (req, res, next) => {
     if (!currentUser) {
       throw new AppError('The user belonging to this token no longer exists.', 401);
     }
-    
+
+    // SPEC-API-02 CON-API02-02: session enforcement with grace.
+    // Pre-02 tokens carry no `sid` — pass until 24h expiry (zero forced
+    // logout on deploy). sid-bound tokens must match the live session;
+    // a null session (post-logout) mismatches any sid and 401s.
+    if (decoded.sid && decoded.sid !== currentUser.currentSessionId) {
+      throw new AppError('Your session was ended on another device.', 401);
+    }
+
     req.user = currentUser;
     next();
   } catch (error) {

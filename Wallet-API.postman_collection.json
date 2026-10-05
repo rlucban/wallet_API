@@ -209,6 +209,67 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "change passcode - stale token rejected (SPEC-API-02)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{stale_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPasscode\": \"1234\",\n  \"newPasscode\": \"5678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/change-passcode",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-passcode"
+              ]
+            },
+            "description": "Expects 401 'Your session was ended on another device.' — protect fires before validation. Set {{stale_token}} to a rotated/superseded JWT."
+          },
+          "response": []
+        },
+        {
+          "name": "logout - stale session (SPEC-API-02 enforced 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{stale_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Expects 401 — generic enforced-401 probe for ACC-API02-01/02 (device A's old token after B force-login or passcode change)."
+          },
+          "response": []
         }
       ]
     },

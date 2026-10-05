@@ -8,8 +8,8 @@ const AppError = require('../utils/AppError');
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_change_in_production';
 const JWT_EXPIRES_IN = '24h';
 
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, JWT_SECRET, {
+const generateToken = (userId, sessionId) => {
+  return jwt.sign({ id: userId, sid: sessionId }, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN
   });
 };
@@ -49,8 +49,8 @@ const authService = {
         initialBalance: initialBalance
       });
 
-      // 6. Generate JWT
-      const token = generateToken(newUser.id);
+      // 6. Generate JWT bound to this session (SPEC-API-02 CON-API02-01)
+      const token = generateToken(newUser.id, sessionId);
 
       return {
         user: {
@@ -92,8 +92,8 @@ const authService = {
       const newSessionId = deviceId || crypto.randomUUID();
       await userRepository.updateSessionId(user.id, newSessionId);
 
-      // 5. Return token
-      const token = generateToken(user.id);
+      // 5. Return token bound to the new session (SPEC-API-02 CON-API02-01)
+      const token = generateToken(user.id, newSessionId);
       
       return {
         sessionConflict: false,
@@ -133,12 +133,15 @@ const authService = {
       const salt = await bcrypt.genSalt(10);
       const hashedPasscode = await bcrypt.hash(newPasscode, salt);
 
-      // 4. Persist + rotate session id
+      // 4. Persist + rotate session id (SPEC-API-02 CON-API02-01)
+      const newSessionId = crypto.randomUUID();
       await userRepository.updatePasscode(user.id, hashedPasscode);
-      await userRepository.updateSessionId(user.id, crypto.randomUUID());
+      await userRepository.updateSessionId(user.id, newSessionId);
 
-      // 5. Message only — no user, hash, or token (CON-API-05)
-      return 'Passcode changed successfully';
+      // 5. Fresh session-bound token so the changer stays logged in
+      // (CON-API02-03 amends SPEC-01 CON-API-05 message-only)
+      const token = generateToken(user.id, newSessionId);
+      return { message: 'Passcode changed successfully', token };
     } catch (error) {
       if (error instanceof AppError) throw error;
       throw new AppError(`Change passcode failed: ${error.message}`, error.statusCode || 500);

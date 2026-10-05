@@ -49,11 +49,14 @@ const authController = {
         throw new Error('User not found in request');
       }
       const { currentPasscode, newPasscode } = req.body;
-      const message = await authService.changePasscode(req.user.id, currentPasscode, newPasscode);
+      // SPEC-API-02 CON-API02-03: service returns { message, token } —
+      // the fresh token keeps the changer logged in (amends SPEC-01 CON-API-05).
+      const { message, token } = await authService.changePasscode(req.user.id, currentPasscode, newPasscode);
 
       res.status(200).json({
         status: 'success',
-        message
+        message,
+        data: { token }
       });
     } catch (error) {
       next(error);
