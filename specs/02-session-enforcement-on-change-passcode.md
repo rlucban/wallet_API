@@ -6,7 +6,7 @@
 | Title | Session enforcement for change-passcode — other devices get logged out |
 | Status | **FINAL** (marked by user 2026-10-06; implementable per AGENTS §1) |
 | Owner | User (final authority) |
-| Version | v0.1 |
+| Version | v1.0 (FINAL; content unchanged from v0.1 except status) |
 | Scope | `src/services/authService.js` (`generateToken`, `login`, `changePasscode`), `src/middlewares/protect.js`, `src/controllers/authController.js` (`changePasscode` response only), `Wallet-API.postman_collection.json` |
 | Non-goals | Push notifications or polling; any WiseWallet app change (SPEC-35 owns the app half); register/login/logout/deleteAccount behavior beyond the token-payload addition; global error-handler hardening; `JWT_SECRET` env fix; test harness (needs its own spec per §1.10); rate-limit retuning (SPEC-01 DEC-API-01 stands) |
 | Normative source | This file (once marked FINAL). File+symbol cites are normative; `:line` numbers are hints only. |

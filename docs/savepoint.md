@@ -37,3 +37,14 @@
 - D-API-05 `src/middlewares/rateLimiter.js` (DEC-API-01 20/15min/IP, exact 429 envelope) on login + change-passcode; Postman happy + wrong-current-401 items.
 - Done (user-run 2026-10-04): `npm install express-rate-limit@7` — server boots with limiter. Open: ACC-API-01..07 curl matrix NOT run (skipped per user call — no spare Supabase target; mock rejected; harness needs own spec). Backend closes unverified-by-curl.
 - Unchanged: Spec 01 FINAL as-is (token-in-200 flagged separately); no other routes, schemas, table shapes, or JWT semantics touched.
+
+---
+
+## 2026-10-06 — Spec 02 FINAL v1.0 + built (D-API02-01..04, deployed-verified)
+
+- `specs/02-session-enforcement-on-change-passcode.md`: FINAL per user call (v1.0; content unchanged from v0.1 except status). Problem: `changePasscode` rotated `currentSessionId` but `protect` enforced JWT + user-exists only — rotation was a record, not a kill switch; "other devices get logged out" unenforceable. User calls locked: changer stays in, eventual 401 logout (offline devices count on first online call), grace over big-bang (zero forced logout on deploy).
+- D-API02-01 `src/services/authService.js`: `generateToken(userId, sessionId)` signs `{id, sid}`; login/register mint bound to the stored session; change rotates + returns `{message, token}` (amends SPEC-01 CON-API-05 message-only — the joint WiseWallet SPEC-35 D-03 stores).
+- D-API02-02 `src/middlewares/protect.js`: sid-bound mismatch → 401 `'Your session was ended on another device.'` via `AppError` (existing handler, no new shape); sid-less (pre-02) tokens pass until 24h expiry; null session (post-logout) kills outstanding tokens too.
+- D-API02-03 `src/controllers/authController.js`: change response `200 {status:'success', message, data:{token}}`. (Interim note, now closed: service-first ordering left the object in `message` for one slice.)
+- D-API02-04 Postman + user-run matrix on `https://wallet-atog-api.vercel.app` (throwaway `pinchange-test@` account): register→sid-token; A login, B force-login → A logout 401 / B health 200 (ACC-01, enforcement live on deployed); change→200 message + `data.token`, old B 401, fresh token 200, old PIN 401, new PIN 200 with `sid` in JWT (ACC-02); envelopes intact (ACC-04); grace code-verified (no pre-02 token obtainable — ACC-03); step-5 wrong-current/same-PIN/no-token run next. Per-instance throttle caveat (serverless) did not bite.
+- Open: D-05 docs (this entry); SPEC-API-03 fixed-8h JWT window (fixed recommended over sliding — per-request sliding breaks stateless §1.5; draft deferred per user call). No new dep (limiter pre-existed), no table migration, no other route/schema change. Rollback: revert D-03→D-02→D-01; sid-less tokens keep working throughout.
