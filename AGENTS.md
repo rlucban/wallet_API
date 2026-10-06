@@ -117,6 +117,7 @@ wallet-api/
   throttling accepted pending the deployed-URL matrix. Implementable now, server
   half first. See `docs/savepoint.md`.
 - **2026-10-04 — Verification decision (user call).** No test harness added — out of scope per §1.10 (harness needs its own spec + FINAL). D-API-01..05 built on `36-web-platform-invariants-for-backend` per Spec 01 FINAL as-is (message-only 200, CON-API-05/08 stand). Acceptance = user-run ACC-API-01..07 curl matrix + Postman happy/401 entries. Token-in-200 flagged as a separate future item, not implemented.
+- **2026-10-06 — Spec 02 FINAL v1.0 + built (D-API02-01..04, deployed-verified).** `specs/02-session-enforcement-on-change-passcode.md`: rotating `currentSessionId` logged nobody out (`protect` checked JWT + user-exists only). D-01 service (`generateToken` signs `{id, sid}`, login/register mint bound, change returns `{message, token}` amending SPEC-01 CON-API-05); D-02 `protect` grace + mismatch-401 (`'Your session was ended on another device.'`, pre-02 sid-less tokens pass, null session kills); D-03 controller `200 {status, message, data:{token}}`; D-04 Postman stale-token items + user-run matrix on `wallet-atog-api.vercel.app` (ACC-01 A→401/B→200, ACC-02 change→token/old→401/new-login→sid-JWT, ACC-04 envelopes intact; ACC-03 grace code-verified; step-5 wrong-current/same-PIN/no-token run next). Changer stays in; logout nulls kill outstanding tokens. Open: D-05 docs (this entry), SPEC-API-03 fixed-8h JWT window (discussed, draft deferred until implementation lands).
 
 ---
 
